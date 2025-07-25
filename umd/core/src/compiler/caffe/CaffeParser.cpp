@@ -987,9 +987,23 @@ const IBlobNameToTensor* CaffeParser::parse(const char* deployFile,
             for (int i = 0; i < layerMsg.top_size(); i++)
             {
                 const dc::BlobShape& shape = p.shape().Get(i);
-                Dims4 dims(shape.dim().Get(0), shape.dim().Get(1), shape.dim().Get(2), shape.dim().Get(3));
-                ITensor* tensor = network->addInput(layerMsg.top(i).c_str(), dims);
-                mBlobNameToTensor->add(layerMsg.top().Get(i), tensor);
+				if(shape.dim_size() == 2)
+				{
+                	Dims4 dims(shape.dim().Get(0), shape.dim().Get(1), 1, 1);
+                	ITensor* tensor = network->addInput(layerMsg.top(i).c_str(), dims);
+                	mBlobNameToTensor->add(layerMsg.top().Get(i), tensor);
+				}
+				else if(shape.dim_size() == 4)
+				{
+                	Dims4 dims(shape.dim().Get(0), shape.dim().Get(1), shape.dim().Get(2), shape.dim().Get(3));
+                	ITensor* tensor = network->addInput(layerMsg.top(i).c_str(), dims);
+                	mBlobNameToTensor->add(layerMsg.top().Get(i), tensor);
+				}
+				else
+				{
+					gLogError << "error: input data dimension is invalid" << std::endl;
+					return 0;	
+				}
             }
             continue;
         }
