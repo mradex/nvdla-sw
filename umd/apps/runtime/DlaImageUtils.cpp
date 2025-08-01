@@ -38,6 +38,7 @@ extern "C" {
 
 #include <fstream>
 #include <algorithm>
+#include <vector>
 
 static NvDlaError parsePGMInfo(std::ifstream& hFile, NvDlaImage* image);
 static NvDlaError parsePGMData(std::ifstream& hFile, NvDlaImage* image);
