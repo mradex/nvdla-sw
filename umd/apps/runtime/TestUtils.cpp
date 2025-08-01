@@ -158,7 +158,6 @@ NvDlaError createImageCopy(const TestAppArgs* appArgs, const NvDlaImage* in, con
         ORIGINATE_ERROR(NvDlaError_BadParameter, "Mismatched height: %u != %u", in->m_meta.height, out->m_meta.height);
     if (in->m_meta.channel != out->m_meta.channel )
         REPORT_ERROR(NvDlaError_BadParameter, "Mismatched channel: %u != %u", in->m_meta.channel, out->m_meta.channel);
-
     switch(outTensorDesc->pixelFormat)
     {
     case NVDLA_PIXEL_FORMAT_R8:
@@ -213,15 +212,17 @@ NvDlaError createImageCopy(const TestAppArgs* appArgs, const NvDlaImage* in, con
 
     if (out->getBpe() <= 0)
         ORIGINATE_ERROR(NvDlaError_BadParameter);
+#if 0
 
     // These calculations work for channels <= 16
     if (out->m_meta.channel > 16)
         ORIGINATE_ERROR(NvDlaError_BadParameter);
-
+#endif
+#if 0
     // Number of input channels should be <= 4
     if (in->m_meta.channel > 4)
         ORIGINATE_ERROR(NvDlaError_BadParameter, "Input channel should not be greater than 4");
-
+#endif
     if ( 0 )
     {
         NvDlaDebugPrintf("Dims: %d x %d x %d: ", out->m_meta.height, out->m_meta.width, out->m_meta.channel);
@@ -252,11 +253,11 @@ NvDlaError createImageCopy(const TestAppArgs* appArgs, const NvDlaImage* in, con
                     ORIGINATE_ERROR(NvDlaError_BadParameter);
 
                 NvU8* inp = ibuf + ioffset;
-
                 if (outTensorDesc->dataType == NVDLA_DATA_TYPE_HALF)
                 {
                     half_float::half* outp = reinterpret_cast<half_float::half*>(obuf + ooffset);
-                    *outp = static_cast<half_float::half>((float(*inp) - float(appArgs->mean[z]))/appArgs->normalize_value);
+                	//*outp = static_cast<half_float::half>((float(*inp) - float(appArgs->mean[z]))/appArgs->normalize_value);
+                	*outp = static_cast<half_float::half>(float(*inp));
                 }
                 else if (outTensorDesc->dataType == NVDLA_DATA_TYPE_INT8)
                 {

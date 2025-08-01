@@ -62,6 +62,10 @@ static TestImageTypes getImageType(std::string imageFileName)
     {
         it = IMAGE_TYPE_JPG;
     }
+    else if (ext == "raw")
+    {
+        it = IMAGE_TYPE_TENSOR;
+    }
 
     return it;
 }
@@ -89,6 +93,9 @@ static NvDlaError copyImageToInputTensor
             break;
         case IMAGE_TYPE_JPG:
             PROPAGATE_ERROR(JPEG2DIMG(imgPath, R8Image, tensorDesc));
+            break;
+        case IMAGE_TYPE_TENSOR:
+            PROPAGATE_ERROR(InputTensor2DIMG(imgPath, R8Image, tensorDesc));
             break;
         default:
             //TODO Fix this error condition

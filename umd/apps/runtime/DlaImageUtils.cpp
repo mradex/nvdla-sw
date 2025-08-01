@@ -96,6 +96,105 @@ NvDlaError PGM2DIMG(std::string inputfilename, NvDlaImage* output, nvdla::IRunti
     return NvDlaSuccess;
 }
 
+NvDlaError InputTensor2DIMG(std::string inputfilename, NvDlaImage* tensor, nvdla::IRuntime::NvDlaTensor *tensorDesc)
+{
+    std::ifstream hFile(inputfilename.c_str());
+    NvS8 bpe = -1;
+
+    if (hFile.fail())
+        ORIGINATE_ERROR(NvDlaError_FileOperationFailed, "File operation failed: \"%s\"", inputfilename.c_str());
+
+    // Parse the header
+    char magic[4];
+    hFile.read(magic, 4); 
+    if(std::string(magic, 4) != "nhwc")
+        ORIGINATE_ERROR(NvDlaError_FileOperationFailed, "File operation failed: \"%s\"", inputfilename.c_str());
+
+    std::vector<uint32_t> shape(4);
+    hFile.read(reinterpret_cast<char*>(shape.data()), 4 * 4); 
+    tensor->m_meta.height = shape[1];
+    tensor->m_meta.width = shape[2];
+    tensor->m_meta.channel = shape[3];
+    
+    uint32_t type_code;
+    hFile.read(reinterpret_cast<char*>(&type_code), 4); 
+	if(type_code == 2) //int16
+	{
+    	tensor->m_meta.surfaceFormat = NvDlaImage::D_F16_CxHWx_x16_I;
+    }
+	else
+	{
+        ORIGINATE_ERROR(NvDlaError_NotSupported, "unsupport data type", inputfilename.c_str());
+	}
+
+    bpe = tensor->getBpe();
+    if (bpe <= 0)
+        ORIGINATE_ERROR(NvDlaError_BadParameter);
+
+    tensor->m_meta.lineStride = tensorDesc->stride[1];
+    tensor->m_meta.surfaceStride = tensorDesc->stride[2];;
+    tensor->m_meta.size = tensorDesc->bufferSize;
+
+    NvDlaDebugPrintf("tensor2dimg %d %d %d %d %d %d %d\n",
+                    tensor->m_meta.channel,
+                    tensor->m_meta.height,
+                    tensor->m_meta.width,
+                    bpe,
+                    tensor->m_meta.lineStride,
+                    tensor->m_meta.surfaceStride,
+                    tensor->m_meta.size);
+
+    // Allocate the buffer
+    tensor->m_pData = NvDlaAlloc(tensor->m_meta.size);
+    if (!tensor->m_pData)
+        ORIGINATE_ERROR(NvDlaError_InsufficientMemory);
+
+    // Copy the data
+    void* buf = tensor->m_pData;
+
+    // Clear contents
+    memset(buf, 0, tensor->m_meta.size);
+
+	const NvU32 channelAtomic = 32;
+	const int headerSize = 32;
+	hFile.seekg(headerSize, std::ios::beg);	
+   	NvU32 surf_n = tensor->m_meta.channel / (channelAtomic/bpe);
+   	NvU32 ch_rem = tensor->m_meta.channel % (channelAtomic/bpe);
+    // Copy contents
+    for (NvU32 h=0; h<tensor->m_meta.height; h++)
+	{
+    	//char* linebuf = reinterpret_cast<char*>(buf) + (h * tensor->m_meta.lineStride);
+    	for (NvU32 w=0; w<tensor->m_meta.width; w++)
+    	{
+    		char* cbuf ;
+			NvU32 offset;
+			for(NvU32 sf=0; sf < surf_n; sf++)
+			{
+        		offset = (sf * tensor->m_meta.surfaceStride) + (h * tensor->m_meta.lineStride) + (w * channelAtomic);
+				cbuf = (char*)buf + offset;
+    	    	
+				hFile.read(cbuf, channelAtomic);
+    	    	if (hFile.fail()){
+    	    	     ORIGINATE_ERROR(NvDlaError_FileOperationFailed, "File operation failed");
+				}
+			}
+			if(ch_rem)
+			{
+        		offset = (surf_n * tensor->m_meta.surfaceStride) + (h * tensor->m_meta.lineStride) + (w * channelAtomic);
+				cbuf = (char*)buf + offset;
+
+    	    	hFile.read(cbuf, ch_rem * bpe);
+    	    	if (hFile.fail())
+    	    	     ORIGINATE_ERROR(NvDlaError_FileOperationFailed, "File operation failed");
+			}
+    	}
+	}
+
+    hFile.close();
+
+    return NvDlaSuccess;
+}
+
 static NvDlaError parsePGMInfo(std::ifstream& hFile, NvDlaImage* image)
 {
     NvU32 width;

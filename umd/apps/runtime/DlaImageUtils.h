@@ -39,6 +39,7 @@ NvDlaError DIMG2Tiff(const NvDlaImage* input, std::string outputfilename);
 NvDlaError DIMG2DIMGFile(const NvDlaImage* input, std::string outputfilename, bool stableHash, bool rawDump);
 NvDlaError DIMGFile2DIMG(std::string inputfilename, NvDlaImage* output);
 NvDlaError JPEG2DIMG(std::string inputfilename, NvDlaImage* output, nvdla::IRuntime::NvDlaTensor *tensorDesc);
+NvDlaError InputTensor2DIMG(std::string inputfilename, NvDlaImage* output, nvdla::IRuntime::NvDlaTensor *tensorDesc);
 
 #if defined(NVDLA_UTILS_CAFFE) || defined(NVDLA_UTILS_NVCAFFE)
 #include <caffe/blob.hpp>

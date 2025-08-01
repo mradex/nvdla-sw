@@ -42,7 +42,8 @@ enum TestImageTypes
 {
     IMAGE_TYPE_PGM = 0,
     IMAGE_TYPE_JPG = 1,
-    IMAGE_TYPE_UNKNOWN = 2,
+    IMAGE_TYPE_TENSOR = 2,
+    IMAGE_TYPE_UNKNOWN = 3,
 };
 
 NvDlaError launchTest(const TestAppArgs* appArgs);
