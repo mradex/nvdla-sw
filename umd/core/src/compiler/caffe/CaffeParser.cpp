@@ -581,6 +581,7 @@ static ILayer* parseInnerProduct(INetwork* network, const dc::LayerParameter&msg
         biasMode = BiasMode::bm_ELEMENTWISE;
     }
 
+	std::cout << "[" << __FILE__ << ":" << __LINE__ << " - " << __func__ << "() ] " << "msg.bottom(0): " << msg.bottom(0) << std::endl;
     return network->addFullyConnected((*tensors)[msg.bottom(0)], numOutputs,
                                       kernelWeights, biasWeights, biasMode);
 
@@ -670,7 +671,6 @@ static ILayer* parseEltwise(INetwork * network, const dc::LayerParameter&msg,
     return network->addElementWise((*tensors)[msg.bottom(0)], (*tensors)[msg.bottom(1)], op);
 }
 
-
 static ILayer* parseConcat(INetwork * network, const dc::LayerParameter&msg,
                                   CaffeWeightFactory& /*weightFactory*/, IBlobNameToTensor * tensors)
 {
@@ -684,6 +684,12 @@ static ILayer* parseConcat(INetwork * network, const dc::LayerParameter&msg,
     return network->addConcatenation(&ptrs[0], msg.bottom_size());
 }
 
+static ILayer* parseSlice(INetwork * network, const dc::LayerParameter&msg,
+                                  CaffeWeightFactory& weightFactory, IBlobNameToTensor * tensors)
+{
+
+    return network->addSlice((*tensors)[msg.bottom(0)], msg.top_size());
+}
 
 static ILayer* parseDeconvolution(INetwork * network, const dc::LayerParameter& msg,
                                          CaffeWeightFactory& weightFactory, IBlobNameToTensor * tensors)
@@ -887,6 +893,7 @@ LayerParseFnMap::value_type gParseTableData[] =
         LayerParseFnMap::value_type("Power", parsePower),
         LayerParseFnMap::value_type("Eltwise", parseEltwise),
         LayerParseFnMap::value_type("Concat", parseConcat),
+        LayerParseFnMap::value_type("Slice", parseSlice),
         LayerParseFnMap::value_type("Deconvolution", parseDeconvolution),
         LayerParseFnMap::value_type("Sigmoid", parseSigmoid),
         LayerParseFnMap::value_type("TanH", parseTanH),
@@ -1035,7 +1042,10 @@ const IBlobNameToTensor* CaffeParser::parse(const char* deployFile,
             else
             {
                 layer->setName(layerMsg.name().c_str());
-                mBlobNameToTensor->add(layerMsg.top(0), layer->getOutput(0));
+                for(int i=0; i < layerMsg.top_size(); ++i)
+                {
+                    mBlobNameToTensor->add(layerMsg.top(i), layer->getOutput(i)); 
+                }
             }
         }
     }
