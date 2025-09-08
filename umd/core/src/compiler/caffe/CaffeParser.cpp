@@ -444,17 +444,17 @@ static ILayer* parseConvolution(INetwork *network, const dc::LayerParameter& msg
     int numGroups  = p.has_group()? p.group() : 1;
     ILayer* layer = NULL;
 
-    int kernelW = p.has_kernel_w() ? p.kernel_w() : p.kernel_size(0);
-    int kernelH = p.has_kernel_h() ? p.kernel_h() : p.kernel_size_size() > 1 ? p.kernel_size(1) : p.kernel_size(0);
+    int kernelH = p.has_kernel_h() ? p.kernel_h() : p.kernel_size(0);
+    int kernelW = p.has_kernel_w() ? p.kernel_w() : p.kernel_size_size() > 1 ? p.kernel_size(1) : p.kernel_size(0);
 
-    int strideW = p.has_stride_w() ? p.stride_w() : p.stride_size() > 0 ? p.stride(0) : 1;
-    int strideH = p.has_stride_h() ? p.stride_h() : p.stride_size() > 1 ? p.stride(1) : p.stride_size() > 0 ? p.stride(0) : 1;
+    int strideH = p.has_stride_h() ? p.stride_h() : p.stride_size() > 0 ? p.stride(0) : 1;
+    int strideW = p.has_stride_w() ? p.stride_w() : p.stride_size() > 1 ? p.stride(1) : p.stride_size() > 0 ? p.stride(0) : 1;
 
-    int padW = p.has_pad_w() ? p.pad_w() : p.pad_size() > 0 ? p.pad(0) : 0;
-    int padH = p.has_pad_h() ? p.pad_h() : p.pad_size() > 1 ? p.pad(1) : p.pad_size() > 0 ? p.pad(0) : 0;
+    int padH = p.has_pad_h() ? p.pad_h() : p.pad_size() > 0 ? p.pad(0) : 0;
+    int padW = p.has_pad_w() ? p.pad_w() : p.pad_size() > 1 ? p.pad(1) : p.pad_size() > 0 ? p.pad(0) : 0;
 
-    int dilationW = p.dilation_size() > 0 ? p.dilation(0) : 1;
-    int dilationH = p.dilation_size() > 1 ? p.dilation(1) : p.dilation_size() > 0 ? p.dilation(0) : 1;
+    int dilationH = p.dilation_size() > 0 ? p.dilation(0) : 1;
+    int dilationW = p.dilation_size() > 1 ? p.dilation(1) : p.dilation_size() > 0 ? p.dilation(0) : 1;
 
     BiasMode biasMode = BiasMode::bNONE;
 
@@ -581,7 +581,6 @@ static ILayer* parseInnerProduct(INetwork* network, const dc::LayerParameter&msg
         biasMode = BiasMode::bm_ELEMENTWISE;
     }
 
-	std::cout << "[" << __FILE__ << ":" << __LINE__ << " - " << __func__ << "() ] " << "msg.bottom(0): " << msg.bottom(0) << std::endl;
     return network->addFullyConnected((*tensors)[msg.bottom(0)], numOutputs,
                                       kernelWeights, biasWeights, biasMode);
 
@@ -699,19 +698,19 @@ static ILayer* parseDeconvolution(INetwork * network, const dc::LayerParameter& 
 
     BiasMode biasMode = BiasMode::bNONE;
 
-    int kernelW = p.has_kernel_w() ? p.kernel_w() : p.kernel_size(0);
-    int kernelH = p.has_kernel_h() ? p.kernel_h() : p.kernel_size_size() > 1 ? p.kernel_size(1) : p.kernel_size(0);
+    int kernelH = p.has_kernel_h() ? p.kernel_h() : p.kernel_size(0);
+    int kernelW = p.has_kernel_w() ? p.kernel_w() : p.kernel_size_size() > 1 ? p.kernel_size(1) : p.kernel_size(0);
 
-    int strideW = p.has_stride_w() ? p.stride_w() : p.stride_size() > 0 ? p.stride(0) : 1;
-    int strideH = p.has_stride_h() ? p.stride_h() : p.stride_size() > 1 ? p.stride(1) : p.stride_size() > 0 ? p.stride(0) : 1;
+    int strideH = p.has_stride_h() ? p.stride_h() : p.stride_size() > 0 ? p.stride(0) : 1;
+    int strideW = p.has_stride_w() ? p.stride_w() : p.stride_size() > 1 ? p.stride(1) : p.stride_size() > 0 ? p.stride(0) : 1;
 
-    int padW = p.has_pad_w() ? p.pad_w() : p.pad_size() > 0 ? p.pad(0) : 0;
-    int padH = p.has_pad_h() ? p.pad_h() : p.pad_size() > 1 ? p.pad(1) : p.pad_size() > 0 ? p.pad(0) : 0;
+    int padH = p.has_pad_h() ? p.pad_h() : p.pad_size() > 0 ? p.pad(0) : 0;
+    int padW = p.has_pad_w() ? p.pad_w() : p.pad_size() > 1 ? p.pad(1) : p.pad_size() > 0 ? p.pad(0) : 0;
 
-    int dilationW = p.dilation_size() > 0 ? p.dilation(0) : 1;
-    int dilationH = p.dilation_size() > 1 ? p.dilation(1) : p.dilation_size() > 0 ? p.dilation(0) : 1;
+    int dilationH = p.dilation_size() > 0 ? p.dilation(0) : 1;
+    int dilationW = p.dilation_size() > 1 ? p.dilation(1) : p.dilation_size() > 0 ? p.dilation(0) : 1;
 
-    int numGroups = p.has_group()? p.group() : 1;
+	int numGroups = p.has_group()? p.group() : 1;
 
     Weights kernelWeights = weightFactory(msg.name(), /*WeightType::*/kGENERIC);
     Weights biasWeights =
